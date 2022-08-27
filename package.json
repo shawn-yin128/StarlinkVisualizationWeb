@@ -1,5 +1,4 @@
 {
-  "proxy": "https://api.n2yo.com",
   "name": "spacex",
   "version": "0.1.0",
   "private": true,
