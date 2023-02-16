@@ -1,5 +1,4 @@
 import {useEffect, useRef, useState} from "react";
-import axios from "axios";
 import {SAT_API_KEY, SATELLITE_POSITION_URL, WORLD_MAP_URL} from "../constants";
 import {feature} from "topojson-client";
 import {schemeCategory10} from "d3-scale-chromatic";
@@ -23,24 +22,22 @@ function WorldMap(props) {
     const color = d3Scale.scaleOrdinal(schemeCategory10);
     const refMap = useRef();
     const refTrack = useRef();
+
     const refInitialMount = useRef(true);
-    const prevDrawing = useRef(isDrawing);
     const prevProps = useRef(props);
 
     useEffect(() => {
         if (refInitialMount.current) {
             console.log("world map initial mount");
             refInitialMount.current = false;
-            axios.get(WORLD_MAP_URL)
-                .then((res) => {
-                        const {data} = res;
-                        const land = feature(data, data.objects.countries).features;
-                        generateMap(land);
-                        console.log("success in fetching world map.");
-                    }
-                ).catch(e => {
-                console.log("error in fetch world map data -> ", e);
-            })
+            fetch(WORLD_MAP_URL)
+                .then(res => res.json())
+                .then(data => {
+                    const land = feature(data, data.objects.countries).features;
+                    generateMap(land);
+                    console.log("success in fetching world map.");
+                })
+                .catch(e => console.log("error in fetch world map data -> ", e));
         } else {
             console.log("world map update");
             if (prevProps.current.satData !== props.satData) {
@@ -51,26 +48,25 @@ function WorldMap(props) {
                 const urls = props.satData.map(sat => {
                         const {satid} = sat;
                         const url = `/api/${SATELLITE_POSITION_URL}/${satid}/${latitude}/${longitude}/${elevation}/${endTime}&apiKey=${SAT_API_KEY}`;
-                        return axios.get(url);
-                    }
-                );
+                        return fetch(url).then((res) => res.json());
+                });
                 console.log("urls -> ", urls);
-                Promise.all(urls).then(res => {
-                        const arr = res.map(sat => sat.data);
+                Promise.all(urls)
+                    .then(res => {
+                        const arr = res;
                         setIsLoading(false);
-                        setIsDrawing(true);
-                        if (!prevDrawing.current) {
+                        if (!isDrawing) {
+                            setIsDrawing(true);
                             track(arr);
                         } else {
                             const oHint = document.querySelector(".hint");
                             oHint.innerHTML = "Please wait for these satellite animation to finish before selecting new ones.";
                         }
-                    }).catch(e => {
-                    console.log("error in fetching satellite position -> ", e.message);
-                });
+                    })
+                    .catch(e => console.log("error in fetching satellite position -> ", e.message));
             }
         }
-    }, [props.satData]);
+    }, [isDrawing, props, props.satData]);
 
     const track = (data) => {
         if (!data[0].hasOwnProperty("positions")) {

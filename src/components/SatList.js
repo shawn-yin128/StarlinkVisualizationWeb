@@ -5,10 +5,10 @@ import {useState} from "react";
 function SatelliteList(props) {
     const [selected, setSelected] = useState([]);
 
-    const satList = props.satInfo ? props.satInfo.above : [];
-    const {isLoad} = props.isLoad;
+    const satList = props.satInfo ? props.satInfo : [];
+    const isLoad = props.isLoad;
 
-    const onChange = (e) => {
+    const onChange = e => {
         const {dataInfo, checked} = e.target;
         const list = addOrRemove(dataInfo, checked, selected);
         setSelected(list);
@@ -22,21 +22,19 @@ function SatelliteList(props) {
         }
         // remove
         if (!status && found) {
-            list = list.filter(entry => {
-                return entry.satid !== item.satid;
-            });
+            list = list.filter(entry => entry.satid !== item.satid);
         }
         return list;
     }
 
-    const onShowSatMap = () => {
-        props.onShowMap(selected);
+    const onClick = () => {
+        props.onClickHandler(selected);
     }
 
     return (
         <div className="sat-list-box">
             <div className="btn-container">
-                <Button size="large" className="btn-add" disabled={selected.length === 0} onClick={onShowSatMap}>Track on map</Button>
+                <Button size="large" className="btn-add" disabled={selected.length === 0} onClick={onClick}>Track on map</Button>
             </div>
             <hr />
             {isLoad ?
@@ -48,8 +46,8 @@ function SatelliteList(props) {
                     renderItem={(item) => (
                         <List.Item actions={[<Checkbox dataInfo={item} onChange={onChange}/>]}>
                             <List.Item.Meta avatar={<Avatar size={50} src={satellite}/>} title={<p>{item.satname}</p>} description={`Launch Date: ${item.launchDate}`} />
-                        </List.Item>
-                    )} ></List>
+                        </List.Item>)}>
+                </List>
             }
         </div>
     )

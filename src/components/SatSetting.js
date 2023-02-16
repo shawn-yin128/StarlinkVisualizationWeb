@@ -3,7 +3,7 @@ import {Button, Form, InputNumber} from "antd";
 function SatelliteSettingForm(props) {
     const onFinish = values => {
         console.log('Received values of form: ', values);
-        props.onShow(values);
+        props.onClickHandler(values);
     }
 
     const formItemLayout = {

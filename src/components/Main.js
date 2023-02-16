@@ -3,7 +3,6 @@ import SatelliteSettingForm from "./SatSetting";
 import SatelliteList from "./SatList";
 import {useState} from "react";
 import {NEARBY_SATELLITE, SAT_API_KEY, STARLINK_CATEGORY} from "../constants";
-import axios from "axios";
 import WorldMap from "./WorldMap";
 
 function Main() {
@@ -12,33 +11,31 @@ function Main() {
     const [satList, setSatList] = useState(null);
     const [isLoadingList, setIsLoadingList] = useState(false);
 
-    const fetchSatellite = (setting) => {
+    const fetchSatellite = setting => {
         const {latitude, longitude, elevation, altitude} = setting;
         const url = `/api/${NEARBY_SATELLITE}/${latitude}/${longitude}/${elevation}/${altitude}/${STARLINK_CATEGORY}/&apiKey=${SAT_API_KEY}`;
         console.log("url -> ", url);
         setIsLoadingList(true);
         console.log("isLoadingList -> ", isLoadingList);
 
-        axios
-            .get(url)
-            .then((res) => {
-                console.log(res.data);
-                setSatInfo(res.data);
+        fetch(url)
+            .then(res => res.json())
+            .then(res => {
+                console.log(res.above);
+                setSatInfo(res.above);
                 console.log("satInfo -> ", satInfo);
                 setIsLoadingList(false);
             })
-            .catch((err) => {
-                console.log("error in fetching satellite information -> ", err);
-            });
+            .catch(err => console.log("error in fetching satellite information -> ", err));
     }
 
-    const showNearbySatellite = (setting) => {
+    const searchSatellite = setting => {
         setSettings(setting);
         console.log("settings -> ", settings);
         fetchSatellite(setting);
     }
 
-    const showMap = (selected) => {
+    const updateSelected = selected => {
         setSatList([...selected]);
         console.log("satList -> ", satList);
     }
@@ -46,8 +43,8 @@ function Main() {
     return (
         <Row className="main">
             <Col span={8} className="left-col">
-                <SatelliteSettingForm onShow={showNearbySatellite}/>
-                <SatelliteList isLoad={isLoadingList} satInfo={satInfo} onShowMap={showMap}/>
+                <SatelliteSettingForm onClickHandler={searchSatellite}/>
+                <SatelliteList isLoad={isLoadingList} satInfo={satInfo} onClickHandler={updateSelected}/>
             </Col>
             <Col span={16} className="right-col">
                 <WorldMap satData={satList} observerData={settings} />

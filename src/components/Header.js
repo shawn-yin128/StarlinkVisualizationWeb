@@ -4,9 +4,7 @@ function Header() {
     return (
         <header className="App-header">
             <img src={spacex_log} className="App-logo" alt="logo"/>
-            <p className={'App-title'}>
-                StarLink Tracker
-            </p>
+            <p className={'App-title'}> StarLink Map Tracker </p>
         </header>
     );
 }
